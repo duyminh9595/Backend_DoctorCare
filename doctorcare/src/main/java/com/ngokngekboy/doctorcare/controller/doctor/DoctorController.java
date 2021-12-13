@@ -5,6 +5,7 @@ import com.ngokngekboy.doctorcare.dto.LoginDTO;
 import com.ngokngekboy.doctorcare.dto.SuccessDTO;
 import com.ngokngekboy.doctorcare.dto.UpdatePasswordDTO;
 import com.ngokngekboy.doctorcare.dto.doctor.*;
+import com.ngokngekboy.doctorcare.dto.patient.DetailApointmentDTO;
 import com.ngokngekboy.doctorcare.service.IDoctorSer;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @CrossOrigin
@@ -108,4 +110,49 @@ public class DoctorController {
         List<ThuocAvailableDoctorDTO>thuocAvailableDoctorDTOS=iDoctorSer.GetThuocAvailableDoctorByName(nameThuocDoctorDTO);
         return ResponseEntity.ok(thuocAvailableDoctorDTOS);
     }
+    @GetMapping("/core/benhnhantungkhambenh")
+    public ResponseEntity BenhNhanTungKhamBenh()
+    {
+        List<BenhNhanTungKhamBenhDTO>benhNhanTungKhamBenhDTOS=
+                iDoctorSer.GetBenhNhanTungKhamBenh();
+        return ResponseEntity.ok(benhNhanTungKhamBenhDTOS);
+    }
+    @PostMapping("/core/benhtungkhambenhtheotenoremail")
+    public ResponseEntity BenhNhanTungKhamBenhTheoTenOrEmail(@RequestBody TenEmailPatientDTO tenEmailPatientDTO)
+    {
+        List<BenhNhanTungKhamBenhDTO>benhNhanTungKhamBenhDTOS=
+                iDoctorSer.GetBenhNhanTungKhamBenhTheoTenOrEmail(tenEmailPatientDTO.getName_or_email());
+        return ResponseEntity.ok(benhNhanTungKhamBenhDTOS);
+    }
+    @GetMapping("/core/hosbenhan")
+    public ResponseEntity GetHoSoBenhAnDoctor(@RequestParam Long id)
+    {
+        List<HoSoBenhAnDTO>hoSoBenhAnDTOList=iDoctorSer.GetHoSoBenhAnBaseOnPatientId(id);
+        return ResponseEntity.ok(hoSoBenhAnDTOList);
+    }
+    @GetMapping("/core/detailapointment")
+    public ResponseEntity GetDetailApointmentBaseId(@RequestParam Long id)
+    {
+        DetailApointmentDTO detailApointmentDTO=iDoctorSer.GetDetailApointment(id);
+        return ResponseEntity.ok(detailApointmentDTO);
+    }
+    @GetMapping("/core/dashboard")
+    public ResponseEntity GetDashboard()
+    {
+        DashboardDTO dashboardDTO=iDoctorSer.GetDashboard();
+        return ResponseEntity.ok(dashboardDTO);
+    }
+    @GetMapping("/core/topbenhnhantrongthang")
+    public ResponseEntity GetTopBenhNhanTrongThang()
+    {
+        List<TopBenhNhanTrongThangDTO>topBenhNhanTrongThangDTOS=iDoctorSer.GetTopBenhNhanTrongThang();
+        return ResponseEntity.ok(topBenhNhanTrongThangDTOS);
+    }
+    @GetMapping("/core/topthuocdungtrongthang")
+    public ResponseEntity GetTopThuocTrongThang()
+    {
+        List<TopThuocTrongThangDTO>topBenhNhanTrongThangDTOS=iDoctorSer.GetThuocTrongThang();
+        return ResponseEntity.ok(topBenhNhanTrongThangDTOS);
+    }
+
 }

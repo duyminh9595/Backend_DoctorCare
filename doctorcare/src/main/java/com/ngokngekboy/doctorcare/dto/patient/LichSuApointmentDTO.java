@@ -10,4 +10,5 @@ public class LichSuApointmentDTO {
     private String date;
     private String gio;
     private String tenbs;
+    private boolean check;
 }

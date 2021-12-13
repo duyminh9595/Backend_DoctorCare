@@ -49,4 +49,37 @@ public interface LichKhamRepository extends JpaRepository<LichHenKham, Long> {
     @Query("select p from LichHenKham p where p.date_created=?1 and p.buoi=?2 and p.status=true")
     List<LichHenKham>GetApointmentAfterSTTCancel(Date date,boolean buoi);
 
+    @Query("select p from LichHenKham p where p.id=?1 and  p.status=true")
+    LichHenKham GetLichHenKhamById(Long id);
+
+    @Query("select p from LichHenKham p where p.date_created>=?3 and p.patient.id=?1 and p.status=?2")
+    List<LichHenKham> GetLichHenKhamPatientFromToday(Long id, boolean b, Date convertStringToDate);
+
+    @Query("select p from LichHenKham p where p.date_created<=?3 and p.patient.id=?1 and p.status=?2 order by p.date_created desc ")
+    List<LichHenKham> GetLichHenKhamPatientFromTodayBefore(Long id, boolean b, Date convertStringToDate);
+
+    @Query("select p from LichHenKham p where p.date_created=?2 and p.status=?1 order by p.date_created desc ")
+    List<LichHenKham> GetLichHenKhamFromTodayBefore( boolean b, Date convertStringToDate);
+
+    @Query("select p from LichHenKham p where p.user_send_cancel=true and p.status=?1 order by p.date_created desc ")
+    List<LichHenKham> GetLichHenKhamUserHasCancel( boolean b, Date convertStringToDate);
+
+    @Query("select p from LichHenKham p where  p.status=false and p.user_send_cancel=true order by p.date_created desc ")
+    List<LichHenKham> GetLichHenKhamUserCancel();
+
+    @Query("select p from LichHenKham p where  p.patient.email like CONCAT('%',?1,'%') and p.user_send_cancel=true and p.status=true order by p.date_created desc ")
+    List<LichHenKham> GetLichHenKhamUserHasCancelBaseOnEmail( String name_or_emaIl,boolean b, Date convertStringToDate );
+
+    @Query("select p from LichHenKham p where  p.patient.id=?1  order by p.date_created desc ")
+    List<LichHenKham> GetLichHenKhamUserHasCancelBaseOnPatientId(Long patientid );
+
+    @Query("select p from LichHenKham p")
+    List<LichHenKham>GetAllLichHenKham();
+
+    @Query("select p from LichHenKham p where p.patient.id=?1")
+    List<LichHenKham>GetAllLichHenKham(Long id);
+
+    @Query("select p from LichHenKham p where p.patient.id=?1 and p.doctor.id=?2")
+    List<LichHenKham>GetAllLichHenKhamAndDoctorId(Long id,Long doctorid);
+
 }

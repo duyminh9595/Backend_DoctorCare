@@ -16,11 +16,11 @@ public class HoSoBenhAnDTO {
     private String doctorname;
 
 
-    private Date date_created;
+    private String date_created;
 
 
     private String chuan_doan;
 
 
-    private Date ngay_tai_kham;
+    private String ngay_tai_kham;
 }

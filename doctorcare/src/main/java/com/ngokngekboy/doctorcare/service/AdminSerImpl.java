@@ -9,6 +9,7 @@ import com.ngokngekboy.doctorcare.dto.NameMedicineDTOO;
 import com.ngokngekboy.doctorcare.dto.SuccessDTO;
 import com.ngokngekboy.doctorcare.dto.admin.*;
 import com.ngokngekboy.doctorcare.dto.patient.PatientInforDTO;
+import com.ngokngekboy.doctorcare.dto.patient.TodayAppointment;
 import com.ngokngekboy.doctorcare.entity.*;
 import com.ngokngekboy.doctorcare.jwt.JwtGenerationAdmin;
 import com.ngokngekboy.doctorcare.sendemail.EmailSenderService;
@@ -20,13 +21,12 @@ import org.springframework.stereotype.Service;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.print.Doc;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -48,6 +48,7 @@ public class AdminSerImpl implements IAdminSer{
     private LichKhamRepository lichKhamRepository;
     private HoSoBenhAnRepository hoSoBenhAnRepository;
     private EmailSenderService emailSenderService;
+    private HoaDonThuocRepository hoaDonThuocRepository;
 
     @Override
     public SuccessDTO AdminLogin(LoginDTO loginDTO) {
@@ -434,6 +435,784 @@ public class AdminSerImpl implements IAdminSer{
             infoMedicineDTOList.add(infoMedicineDTO);
         }
         return infoMedicineDTOList;
+    }
+
+    @Override
+    public List<TodayAppointment> GetApointmentFromToday() {
+        List<TodayAppointment>todayAppointmentList=new ArrayList<>();
+
+            Date today=new Date();
+            String dataDate=dateFormat.ConverDateToString(today);
+            List<LichHenKham>lichHenKhamList=lichKhamRepository.GetLichHenKhamFromTodayBefore(true,dateFormat.ConvertStringToDate(dataDate));
+            for(LichHenKham data:lichHenKhamList)
+            {
+                TodayAppointment todayAppointment=new TodayAppointment();
+                todayAppointment.setBacsiid(data.getDoctor().getId());
+                todayAppointment.setUser_send_cancel(data.isUser_send_cancel());
+                todayAppointment.setPatentid(data.getPatient().getId());
+                if(data.isBuoi()) {
+                    todayAppointment.setBuoi("Sáng");
+                    int hour=(data.getStt()-1)/4;
+                    int min=(data.getStt()-1)%4;
+                    todayAppointment.setThoigian((8+hour)+"AM : "+(15*min));
+
+                }
+                else {
+                    todayAppointment.setBuoi("Chiều");
+                    int hour=(data.getStt()-1)/4;
+                    int min=(data.getStt()-1)%4;
+                    todayAppointment.setThoigian((13+hour)+"PM : "+(15*min));
+                }
+                HoSoBenhAn hoSoBenhAn=hoSoBenhAnRepository.findHoSoBenhAnhByLichHenId(data.getId());
+                if(hoSoBenhAn!=null)
+                {
+                    todayAppointment.setBs_da_chuandoan(true);
+                }
+                else
+                    todayAppointment.setBs_da_chuandoan(false);
+                todayAppointment.setStatus(data.isStatus());
+                todayAppointment.setTenkhoa(data.getDoctor().getKhoa().getTenkhoa());
+                todayAppointment.setBacsiname(data.getDoctor().getFullName());
+                todayAppointment.setSdt(data.getDoctor().getSdt());
+                todayAppointment.setNgay(dateFormat.ConverDateToStringToFE(data.getDate_created()));
+                todayAppointment.setId(data.getId());
+                todayAppointment.setImage_url(data.getDoctor().getImage_url());
+                if(hoSoBenhAn==null)
+                    todayAppointmentList.add(todayAppointment);
+            }
+
+        return todayAppointmentList;
+    }
+
+    @Override
+    public List<TodayAppointment> GetApointmentUserCancel() {
+        List<TodayAppointment>todayAppointmentList=new ArrayList<>();
+
+        Date today=new Date();
+        String dataDate=dateFormat.ConverDateToString(today);
+        List<LichHenKham>lichHenKhamList=lichKhamRepository.GetLichHenKhamUserHasCancel(true,dateFormat.ConvertStringToDate(dataDate));
+        for(LichHenKham data:lichHenKhamList)
+        {
+            TodayAppointment todayAppointment=new TodayAppointment();
+            todayAppointment.setBacsiid(data.getDoctor().getId());
+            todayAppointment.setUser_send_cancel(data.isUser_send_cancel());
+            todayAppointment.setPatentid(data.getPatient().getId());
+            if(data.isBuoi()) {
+                todayAppointment.setBuoi("Sáng");
+                int hour=(data.getStt()-1)/4;
+                int min=(data.getStt()-1)%4;
+                todayAppointment.setThoigian((8+hour)+"AM : "+(15*min));
+
+            }
+            else {
+                todayAppointment.setBuoi("Chiều");
+                int hour=(data.getStt()-1)/4;
+                int min=(data.getStt()-1)%4;
+                todayAppointment.setThoigian((13+hour)+"PM : "+(15*min));
+            }
+            HoSoBenhAn hoSoBenhAn=hoSoBenhAnRepository.findHoSoBenhAnhByLichHenId(data.getId());
+            if(hoSoBenhAn!=null)
+            {
+                todayAppointment.setBs_da_chuandoan(true);
+            }
+            else
+                todayAppointment.setBs_da_chuandoan(false);
+            todayAppointment.setStatus(data.isStatus());
+            todayAppointment.setTenkhoa(data.getDoctor().getKhoa().getTenkhoa());
+            todayAppointment.setBacsiname(data.getDoctor().getFullName());
+            todayAppointment.setSdt(data.getDoctor().getSdt());
+            todayAppointment.setNgay(dateFormat.ConverDateToStringToFE(data.getDate_created()));
+            todayAppointment.setId(data.getId());
+            todayAppointment.setImage_url(data.getDoctor().getImage_url());
+            todayAppointment.setEmailbn(data.getPatient().getEmail());
+            if(hoSoBenhAn==null &&  data.isUser_send_cancel())
+                todayAppointmentList.add(todayAppointment);
+        }
+
+        return todayAppointmentList;
+    }
+
+    @Override
+    public boolean AdminAproveApointmentUserCancel(Long id) {
+        LichHenKham lichHenKham=lichKhamRepository.GetLichHenKhamById(id);
+        if(lichHenKham!=null)
+        {
+            if(!lichHenKham.isUser_send_cancel())
+                return false;
+            HoSoBenhAn hoSoBenhAn=hoSoBenhAnRepository.findHoSoBenhAnhByLichHenId(lichHenKham.getId());
+            if(hoSoBenhAn==null)
+            {
+                lichHenKham.setStatus(false);
+                lichKhamRepository.save(lichHenKham);
+                String buoi="";
+                if(lichHenKham.isBuoi())
+                {
+                    buoi="sáng";
+                }
+                else
+                    buoi="chiều";
+                String content="Bạn đã hủy thành công lịch khám bệnh mã số: "+lichHenKham.getId()+" vào ngày "+dateFormat.ConverDateToStringToFE(lichHenKham.getDate_created())+" , buổi: "+buoi;
+                emailSenderService.sendSimpleMessage(lichHenKham.getPatient().getEmail(),"hủy thành công lịch hẹn khám",content);
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+
+    @Override
+    public List<TodayAppointment> GetApointmentUserCancelBaseOnEmail(String email) {
+        List<TodayAppointment>todayAppointmentList=new ArrayList<>();
+
+        Date today=new Date();
+        String dataDate=dateFormat.ConverDateToString(today);
+
+            List<LichHenKham>lichHenKhamList=lichKhamRepository.GetLichHenKhamUserHasCancelBaseOnEmail(email,true,dateFormat.ConvertStringToDate(dataDate));
+            for(LichHenKham data:lichHenKhamList)
+            {
+                TodayAppointment todayAppointment=new TodayAppointment();
+                todayAppointment.setBacsiid(data.getDoctor().getId());
+                todayAppointment.setUser_send_cancel(data.isUser_send_cancel());
+                todayAppointment.setPatentid(data.getPatient().getId());
+                if(data.isBuoi()) {
+                    todayAppointment.setBuoi("Sáng");
+                    int hour=(data.getStt()-1)/4;
+                    int min=(data.getStt()-1)%4;
+                    todayAppointment.setThoigian((8+hour)+"AM : "+(15*min));
+
+                }
+                else {
+                    todayAppointment.setBuoi("Chiều");
+                    int hour=(data.getStt()-1)/4;
+                    int min=(data.getStt()-1)%4;
+                    todayAppointment.setThoigian((13+hour)+"PM : "+(15*min));
+                }
+                HoSoBenhAn hoSoBenhAn=hoSoBenhAnRepository.findHoSoBenhAnhByLichHenId(data.getId());
+                if(hoSoBenhAn!=null)
+                {
+                    todayAppointment.setBs_da_chuandoan(true);
+                }
+                else
+                    todayAppointment.setBs_da_chuandoan(false);
+                todayAppointment.setStatus(data.isStatus());
+                todayAppointment.setTenkhoa(data.getDoctor().getKhoa().getTenkhoa());
+                todayAppointment.setBacsiname(data.getDoctor().getFullName());
+                todayAppointment.setSdt(data.getDoctor().getSdt());
+                todayAppointment.setNgay(dateFormat.ConverDateToStringToFE(data.getDate_created()));
+                todayAppointment.setId(data.getId());
+                todayAppointment.setImage_url(data.getDoctor().getImage_url());
+                todayAppointment.setEmailbn(data.getPatient().getEmail());
+                if(hoSoBenhAn==null &&  data.isUser_send_cancel())
+                    todayAppointmentList.add(todayAppointment);
+            }
+
+
+        return todayAppointmentList;
+    }
+
+    @Override
+    public AllInforPatientDTO GetAllAboutPatient(Long id) {
+        Patient patient=patientRepository.findPatientById(id);
+        if(patient!=null)
+        {
+            AllInforPatientDTO allInforPatientDTO=new AllInforPatientDTO();
+
+            allInforPatientDTO.setCmnd(patient.getCmnd());
+            allInforPatientDTO.setEmail(patient.getEmail());
+            allInforPatientDTO.setId(patient.getId());
+            allInforPatientDTO.setSdt(String.valueOf(patient.getSdt()));
+            allInforPatientDTO.setFullname(patient.getFullName());
+            allInforPatientDTO.setDiachi(patient.getAddress());
+            if(patient.getImage_url()==null)
+                allInforPatientDTO.setImageurl("");
+            else
+                allInforPatientDTO.setImageurl(patient.getImage_url());
+            if(patient.isGender())
+                allInforPatientDTO.setGioitinh("Nam");
+            else
+                allInforPatientDTO.setGioitinh("Nữ");
+            allInforPatientDTO.setStatus(patient.isEnable_status());
+            allInforPatientDTO.setNgaysinh(dateFormat.ConverDateToStringToFE(patient.getDate_of_birth()));
+            List<LichHenKham>lichHenKhamList=lichKhamRepository.GetLichHenKhamUserHasCancelBaseOnPatientId(patient.getId());
+
+            List<LichDatHenPatientDTO>lichDatHenPatientDTOList=new ArrayList<>();
+
+            for(LichHenKham data:lichHenKhamList)
+            {
+                LichDatHenPatientDTO lichDatHenPatientDTO=new LichDatHenPatientDTO();
+                lichDatHenPatientDTO.setId(data.getId());
+                if(data.isStatus())
+                    lichDatHenPatientDTO.setStatus("Admin đã hủy");
+                else
+                    lichDatHenPatientDTO.setStatus("");
+                if(data.isBuoi())
+                    lichDatHenPatientDTO.setBuoi("Sáng");
+                else
+                    lichDatHenPatientDTO.setBuoi("Chiều");
+                if(data.isUser_send_cancel())
+                    lichDatHenPatientDTO.setUsercancel("User đã hủy");
+                else
+                    lichDatHenPatientDTO.setUsercancel("");
+                lichDatHenPatientDTO.setNgaydat(dateFormat.ConverDateToStringToFE(data.getDate_created()));
+                lichDatHenPatientDTOList.add(lichDatHenPatientDTO);
+            }
+
+            List<HoSoBenhAn>hoSoBenhAnList=hoSoBenhAnRepository.findHoSoBenhAnhByPatientId(patient.getId());
+
+            List<HoSoBenhAnDTO>hoSoBenhAnDTOList=new ArrayList<>();
+
+            for(HoSoBenhAn data:hoSoBenhAnList)
+            {
+                HoSoBenhAnDTO hoSoBenhAnDTO=new HoSoBenhAnDTO();
+                hoSoBenhAnDTO.setId(data.getId());
+                hoSoBenhAnDTO.setNgaykham(dateFormat.ConverDateToStringToFE(data.getDate_created()));
+                hoSoBenhAnDTO.setNgaytaikham(dateFormat.ConverDateToStringToFE(data.getNgay_tai_kham()));
+                hoSoBenhAnDTO.setIdbacsi(data.getDoctor().getId());
+                hoSoBenhAnDTO.setGiatienkhambenh(String.valueOf(data.getPrice_kham_benh()));
+                if(data.isThanh_toan())
+                    hoSoBenhAnDTO.setDathanhtoan("Đã thanh toán");
+                else
+                    hoSoBenhAnDTO.setDathanhtoan("Chưa thanh toán");
+                hoSoBenhAnDTO.setTenbacsi(data.getDoctor().getFullName());
+                hoSoBenhAnDTO.setChuandoan(data.getChuan_doan());
+                hoSoBenhAnDTOList.add(hoSoBenhAnDTO);
+            }
+
+            allInforPatientDTO.setLichDatHenPatientDTOS(lichDatHenPatientDTOList);
+            allInforPatientDTO.setHoSoBenhAnDTOList(hoSoBenhAnDTOList);
+            return allInforPatientDTO;
+        }
+        return null;
+    }
+
+    @Override
+    public HoSoBenhAnDTO GetALlAboutHoSoBenhAn(Long id) {
+        HoSoBenhAn hoSoBenhAn=hoSoBenhAnRepository.findHoSoBenhAnById(id);
+        if(hoSoBenhAn!=null)
+        {
+            HoSoBenhAnDTO hoSoBenhAnDTO=new HoSoBenhAnDTO();
+            hoSoBenhAnDTO.setTenbacsi(hoSoBenhAn.getDoctor().getFullName());
+            hoSoBenhAnDTO.setChuandoan(hoSoBenhAnDTO.getChuandoan());
+            hoSoBenhAnDTO.setGiatienkhambenh(String.valueOf(hoSoBenhAn.getPrice_kham_benh()));
+            hoSoBenhAnDTO.setNgaytaikham(dateFormat.ConverDateToStringToFE(hoSoBenhAn.getNgay_tai_kham()));
+
+            List<HoaDonThuoc>hoaDonThuocList=hoaDonThuocRepository.findByHoSoBenhAnId(hoSoBenhAn.getId());
+            List<ThuocInHoSoBenhAnDTO>thuocInHoSoBenhAnDTOList=new ArrayList<>();
+            float totalpricethuoc=0;
+            for(HoaDonThuoc data:hoaDonThuocList)
+            {
+                ThuocInHoSoBenhAnDTO thuoc=new ThuocInHoSoBenhAnDTO();
+                thuoc.setGiatien(data.getPrice_per_quantity());
+                thuoc.setTenthuoc(data.getThuoc().getName());
+                thuoc.setQuantity(data.getQuantity());
+                thuoc.setTongcong(data.getQuantity()*data.getPrice_per_quantity());
+                totalpricethuoc+=data.getQuantity()* data.getPrice_per_quantity();
+                thuocInHoSoBenhAnDTOList.add(thuoc);
+            }
+            hoSoBenhAnDTO.setTongcongtienthuoc(String.valueOf(totalpricethuoc));
+            hoSoBenhAnDTO.setGiatienphaitra(String.valueOf(totalpricethuoc+hoSoBenhAn.getPrice_kham_benh()));
+            hoSoBenhAnDTO.setThuocInHoSoBenhAnDTOList(thuocInHoSoBenhAnDTOList);
+            hoSoBenhAnDTO.setChuandoan(hoSoBenhAn.getChuan_doan());
+            if(hoSoBenhAn.isThanh_toan())
+                hoSoBenhAnDTO.setDathanhtoan("Đã thanh toán");
+            else
+                hoSoBenhAnDTO.setDathanhtoan("Chưa thanh toán");
+            hoSoBenhAnDTO.setNgaykham(dateFormat.ConverDateToStringToFE(hoSoBenhAn.getDate_created()));
+            hoSoBenhAnDTO.setId(hoSoBenhAn.getId());
+            hoSoBenhAnDTO.setStatus(hoSoBenhAn.isThanh_toan());
+            return hoSoBenhAnDTO;
+        }
+        return null;
+    }
+
+    @Override
+    public AllAboutDoctorDTO GetAllAboutDoctor(Long id) {
+        Doctor doctor=doctorRepository.findDoctorById(id);
+        if(doctor!=null)
+        {
+            AllAboutDoctorDTO allAboutDoctorDTO=new AllAboutDoctorDTO();
+            allAboutDoctorDTO.setId(doctor.getId());
+            allAboutDoctorDTO.setTenbacsi(doctor.getFullName());
+            allAboutDoctorDTO.setTenkhoa(doctor.getKhoa().getTenkhoa());
+            allAboutDoctorDTO.setCmnd(doctor.getCmnd());
+            allAboutDoctorDTO.setBangcap(doctor.getBangcap());
+            allAboutDoctorDTO.setNgaysinh(dateFormat.ConverDateToStringToFE(doctor.getDate_of_birth()));
+            allAboutDoctorDTO.setEmail(doctor.getEmail());
+            if(doctor.isGender())
+                allAboutDoctorDTO.setGioitinh("Nam");
+            else
+                allAboutDoctorDTO.setGioitinh("Nữ");
+            allAboutDoctorDTO.setImage_url(doctor.getImage_url());
+            List<HoSoBenhAn>hoSoBenhAnList=hoSoBenhAnRepository.findHoSoBenhAnByDoctor(doctor.getId());
+            java.util.Date date= new Date();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            int month = cal.get(Calendar.MONTH);
+            int thisyear=cal.get(Calendar.YEAR);
+
+            int socatrongthang=0;
+            int socatrongnam=0;
+            for(HoSoBenhAn data:hoSoBenhAnList)
+            {
+                cal.setTime(data.getDate_created());
+                int monthindata = cal.get(Calendar.MONTH);
+                int yearindata=cal.get(Calendar.YEAR);
+                if(month==monthindata && thisyear==yearindata)
+                    ++socatrongthang;
+                if(thisyear==yearindata)
+                    ++socatrongnam;
+            }
+            allAboutDoctorDTO.setTongluotkham((long) hoSoBenhAnList.size());
+            allAboutDoctorDTO.setTongluotkhamtrongnam((long) socatrongnam);
+            allAboutDoctorDTO.setTongluotkhamtrongthang((long)socatrongthang);
+            allAboutDoctorDTO.setSdt(String.valueOf(doctor.getSdt()));
+            return allAboutDoctorDTO;
+        }
+        return null;
+    }
+
+    @Override
+    public List<HoSoBenhAnDTO> GetAllHoSoBenhAnBaseDoctor(Long id) {
+        List<HoSoBenhAn>hoSoBenhAnList= hoSoBenhAnRepository.findHoSoBenhAnByDoctor(id);
+        List<HoSoBenhAnDTO>hoSoBenhAnDTOList=new ArrayList<>();
+        for(HoSoBenhAn data:hoSoBenhAnList)
+        {
+            HoSoBenhAnDTO hoSoBenhAnDTO=new HoSoBenhAnDTO();
+            hoSoBenhAnDTO.setId(data.getId());
+            hoSoBenhAnDTO.setNgaykham(dateFormat.ConverDateToStringToFE(data.getDate_created()));
+            hoSoBenhAnDTO.setNgaytaikham(dateFormat.ConverDateToStringToFE(data.getNgay_tai_kham()));
+            hoSoBenhAnDTO.setIdbacsi(data.getDoctor().getId());
+            hoSoBenhAnDTO.setGiatienkhambenh(String.valueOf(data.getPrice_kham_benh()));
+            if(data.isThanh_toan())
+                hoSoBenhAnDTO.setDathanhtoan("Đã thanh toán");
+            else
+                hoSoBenhAnDTO.setDathanhtoan("Chưa thanh toán");
+            hoSoBenhAnDTO.setTenbacsi(data.getDoctor().getFullName());
+            hoSoBenhAnDTO.setChuandoan(data.getChuan_doan());
+            hoSoBenhAnDTO.setTenbenhnhan(data.getPatient().getFullName());
+            hoSoBenhAnDTO.setSdtbenhnhan(String.valueOf(data.getPatient().getSdt()));
+            if(data.getLichHenKham().isBuoi())
+                hoSoBenhAnDTO.setBuoi("Sáng");
+            else
+                hoSoBenhAnDTO.setBuoi("Chiều");
+            hoSoBenhAnDTOList.add(hoSoBenhAnDTO);
+        }
+        return hoSoBenhAnDTOList;
+    }
+
+    @Override
+    public List<HoSoBenhAnDTO> GetAllHoSoBenhAnBaseDoctorDateRange(DateRangeDTO rangeDTO, Long id) {
+        List<HoSoBenhAn>hoSoBenhAnList= hoSoBenhAnRepository.findHoSoBenhAnByDoctor(id);
+        List<HoSoBenhAnDTO>hoSoBenhAnDTOList=new ArrayList<>();
+        for(HoSoBenhAn data:hoSoBenhAnList)
+        {
+            Date datecompare=dateFormat.ConvertStringToDate(dateFormat.ConverDateToString(data.getDate_created()));
+            Date dateend=dateFormat.ConvertStringToDate(rangeDTO.getEnd());
+            Date datestart=dateFormat.ConvertStringToDate(rangeDTO.getStart());
+            if(datecompare.before(dateend) && datecompare.after(datestart) || datecompare.equals(datestart) || datecompare.equals(dateend)) {
+                HoSoBenhAnDTO hoSoBenhAnDTO = new HoSoBenhAnDTO();
+                hoSoBenhAnDTO.setId(data.getId());
+                hoSoBenhAnDTO.setNgaykham(dateFormat.ConverDateToStringToFE(data.getDate_created()));
+                hoSoBenhAnDTO.setNgaytaikham(dateFormat.ConverDateToStringToFE(data.getNgay_tai_kham()));
+                hoSoBenhAnDTO.setIdbacsi(data.getDoctor().getId());
+                hoSoBenhAnDTO.setGiatienkhambenh(String.valueOf(data.getPrice_kham_benh()));
+                if (data.isThanh_toan())
+                    hoSoBenhAnDTO.setDathanhtoan("Đã thanh toán");
+                else
+                    hoSoBenhAnDTO.setDathanhtoan("Chưa thanh toán");
+                hoSoBenhAnDTO.setTenbacsi(data.getDoctor().getFullName());
+                hoSoBenhAnDTO.setChuandoan(data.getChuan_doan());
+                hoSoBenhAnDTO.setTenbenhnhan(data.getPatient().getFullName());
+                hoSoBenhAnDTO.setSdtbenhnhan(String.valueOf(data.getPatient().getSdt()));
+                if (data.getLichHenKham().isBuoi())
+                    hoSoBenhAnDTO.setBuoi("Sáng");
+                else
+                    hoSoBenhAnDTO.setBuoi("Chiều");
+                hoSoBenhAnDTOList.add(hoSoBenhAnDTO);
+            }
+
+        }
+        return hoSoBenhAnDTOList;
+    }
+
+    @Override
+    public boolean UpdateDoctorNewPass(DoctorNewPassDTO doctorNewPassDTO, Long id) {
+        Doctor doctor=doctorRepository.findDoctorById(id);
+        if(doctor!=null)
+        {
+            doctor.setPassword(passwordEncoder.encode(doctorNewPassDTO.getNewpass()));
+            doctorRepository.save(doctor);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public List<HoSoBenhAnChuaTraTienDTO> GetChuaTraTienHoSoBenhAn() {
+        List<HoSoBenhAnChuaTraTienDTO>hoSoBenhAnChuaTraTienDTOList=new ArrayList<>();
+        List<HoSoBenhAn>hoSoBenhAnList=hoSoBenhAnRepository.findHoSoBenhAnChuaTraTien();
+        for(HoSoBenhAn data:hoSoBenhAnList)
+        {
+            HoSoBenhAnChuaTraTienDTO hoSoBenhAnChuaTraTienDTO=new HoSoBenhAnChuaTraTienDTO();
+            List<HoaDonThuoc>hoaDonThuocList=hoaDonThuocRepository.findByHoSoBenhAnId(data.getId());
+            float total=0;
+            for(HoaDonThuoc hoaDonThuoc:hoaDonThuocList)
+            {
+                total+=hoaDonThuoc.getQuantity()*hoaDonThuoc.getPrice_per_quantity();
+            }
+            hoSoBenhAnChuaTraTienDTO.setId(data.getId());
+            hoSoBenhAnChuaTraTienDTO.setTenbacsi(data.getDoctor().getFullName());
+            hoSoBenhAnChuaTraTienDTO.setTenbenhnhan(data.getPatient().getFullName());
+            hoSoBenhAnChuaTraTienDTO.setTienthuoc(String.valueOf(total));
+            hoSoBenhAnChuaTraTienDTO.setTienkhambenh(String.valueOf(data.getPrice_kham_benh()));
+            hoSoBenhAnChuaTraTienDTO.setNgay(dateFormat.ConverDateToStringToFE(data.getDate_created()));
+            hoSoBenhAnChuaTraTienDTO.setTongbienlai(String.valueOf(total+data.getPrice_kham_benh()));
+            hoSoBenhAnChuaTraTienDTOList.add(hoSoBenhAnChuaTraTienDTO);
+        }
+        return hoSoBenhAnChuaTraTienDTOList;
+    }
+
+    @Override
+    public boolean BenhNhanThanhToanTien(Long id) {
+        HoSoBenhAn hoSoBenhAn=hoSoBenhAnRepository.findHoSoBenhAnById(id);
+        if(hoSoBenhAn!=null)
+        {
+            hoSoBenhAn.setThanh_toan(true);
+            hoSoBenhAnRepository.save(hoSoBenhAn);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public List<DoanhThuDTO> GetDoanhThuTheoNgay() {
+        List<DoanhThuDTO>doanhThuDTOS=new ArrayList<>();
+        Date today=new Date();
+        Date todayConvert=dateFormat.ConvertStringToDate(dateFormat.ConverDateToString(today));
+        List<Doctor>doctorList=doctorRepository.findAllDoctor();
+        for(Doctor dataDoctor:doctorList)
+        {
+            List<HoSoBenhAn>hoSoBenhAnList=hoSoBenhAnRepository.findHoSoBenhAnByDoctor(dataDoctor.getId());
+            if(hoSoBenhAnList.size()>0)
+            {
+                DoanhThuDTO doanhThuDTO=new DoanhThuDTO();
+                int tienthuoc=0;
+                int tienkhambenh=0;
+                for(HoSoBenhAn data:hoSoBenhAnList)
+                {
+                    int tthuoc=0;
+                    if(data.getDate_created().equals(todayConvert))
+                    {
+                        List<HoaDonThuoc>hoaDonThuocList=hoaDonThuocRepository.findByHoSoBenhAnId(data.getId());
+                        for(HoaDonThuoc hoaDonThuoc:hoaDonThuocList)
+                        {
+                            tthuoc+=hoaDonThuoc.getQuantity()*hoaDonThuoc.getPrice_per_quantity();
+                        }
+                        tienthuoc+=tthuoc;
+                        tienkhambenh+=data.getPrice_kham_benh();
+                    }
+                }
+                if(tienthuoc>0)
+                {
+                    doanhThuDTO.setTenbacsi(dataDoctor.getFullName());
+                    doanhThuDTO.setTienkhambenh(tienkhambenh);
+                    doanhThuDTO.setTienthuoc(tienthuoc);
+                    doanhThuDTO.setBacsiid(dataDoctor.getId());
+                    doanhThuDTOS.add(doanhThuDTO);
+                }
+            }
+        }
+        return doanhThuDTOS;
+    }
+
+    @Override
+    public List<DoanhThuDTO> GetDoanhThuTheoThangHienTai() {
+        List<DoanhThuDTO>doanhThuDTOS=new ArrayList<>();
+        Date today=new Date();
+        Date todayConvert=dateFormat.ConvertStringToDate(dateFormat.ConverDateToString(today));
+        List<Doctor>doctorList=doctorRepository.findAllDoctor();
+        for(Doctor dataDoctor:doctorList)
+        {
+            List<HoSoBenhAn>hoSoBenhAnList=hoSoBenhAnRepository.findHoSoBenhAnByDoctor(dataDoctor.getId());
+            if(hoSoBenhAnList.size()>0)
+            {
+                DoanhThuDTO doanhThuDTO=new DoanhThuDTO();
+                int tienthuoc=0;
+                int tienkhambenh=0;
+                for(HoSoBenhAn data:hoSoBenhAnList)
+                {
+                    int tthuoc=0;
+                    if(data.getDate_created().getMonth()==todayConvert.getMonth() && data.getDate_created().getYear()==todayConvert.getYear())
+                    {
+                        List<HoaDonThuoc>hoaDonThuocList=hoaDonThuocRepository.findByHoSoBenhAnId(data.getId());
+                        for(HoaDonThuoc hoaDonThuoc:hoaDonThuocList)
+                        {
+                            tthuoc+=hoaDonThuoc.getQuantity()*hoaDonThuoc.getPrice_per_quantity();
+                        }
+                        tienthuoc+=tthuoc;
+                        tienkhambenh+=data.getPrice_kham_benh();
+                    }
+                }
+                if(tienthuoc>0)
+                {
+                    doanhThuDTO.setTenbacsi(dataDoctor.getFullName());
+                    doanhThuDTO.setTienkhambenh(tienkhambenh);
+                    doanhThuDTO.setTienthuoc(tienthuoc);
+                    doanhThuDTO.setBacsiid(dataDoctor.getId());
+                    doanhThuDTOS.add(doanhThuDTO);
+                }
+            }
+        }
+        return doanhThuDTOS;
+    }
+
+    @Override
+    public List<DoanhThuDTO> GetDoanhThuTheoNamHienTai() {
+        List<DoanhThuDTO>doanhThuDTOS=new ArrayList<>();
+        Date today=new Date();
+        Date todayConvert=dateFormat.ConvertStringToDate(dateFormat.ConverDateToString(today));
+        List<Doctor>doctorList=doctorRepository.findAllDoctor();
+        for(Doctor dataDoctor:doctorList)
+        {
+            List<HoSoBenhAn>hoSoBenhAnList=hoSoBenhAnRepository.findHoSoBenhAnByDoctor(dataDoctor.getId());
+            if(hoSoBenhAnList.size()>0)
+            {
+                DoanhThuDTO doanhThuDTO=new DoanhThuDTO();
+                int tienthuoc=0;
+                int tienkhambenh=0;
+                for(HoSoBenhAn data:hoSoBenhAnList)
+                {
+                    int tthuoc=0;
+                    if(data.getDate_created().getYear()==todayConvert.getYear())
+                    {
+                        List<HoaDonThuoc>hoaDonThuocList=hoaDonThuocRepository.findByHoSoBenhAnId(data.getId());
+                        for(HoaDonThuoc hoaDonThuoc:hoaDonThuocList)
+                        {
+                            tthuoc+=hoaDonThuoc.getQuantity()*hoaDonThuoc.getPrice_per_quantity();
+                        }
+                        tienthuoc+=tthuoc;
+
+                        tienkhambenh+=data.getPrice_kham_benh();
+                    }
+                }
+                if(tienthuoc>0)
+                {
+                    doanhThuDTO.setTenbacsi(dataDoctor.getFullName());
+                    doanhThuDTO.setTienkhambenh(tienkhambenh);
+                    doanhThuDTO.setTienthuoc(tienthuoc);
+                    doanhThuDTO.setBacsiid(dataDoctor.getId());
+                    doanhThuDTOS.add(doanhThuDTO);
+                }
+            }
+        }
+        return doanhThuDTOS;
+    }
+
+    @Override
+    public List<DoanhThuDTO> GetDoanhThuTheoDateRange(DateRangeDTO rangeDTO) {
+        List<DoanhThuDTO>doanhThuDTOS=new ArrayList<>();
+        Date today=new Date();
+        Date startdate=dateFormat.ConvertStringToDate(rangeDTO.getStart());
+        Date enddate=dateFormat.ConvertStringToDate(rangeDTO.getEnd());
+        List<Doctor>doctorList=doctorRepository.findAllDoctor();
+        for(Doctor dataDoctor:doctorList)
+        {
+            List<HoSoBenhAn>hoSoBenhAnList=hoSoBenhAnRepository.findHoSoBenhAnByDoctor(dataDoctor.getId());
+            if(hoSoBenhAnList.size()>0)
+            {
+                DoanhThuDTO doanhThuDTO=new DoanhThuDTO();
+                int tienthuoc=0;
+                int tienkhambenh=0;
+                for(HoSoBenhAn data:hoSoBenhAnList)
+                {
+                    int tthuoc=0;
+                    Date dataDate=dateFormat.ConvertStringToDate(dateFormat.ConverDateToString(data.getDate_created()));
+                    if(dataDate.after(startdate) && dataDate.before(enddate) || dataDate.equals(startdate)||dataDate.equals(enddate))
+                    {
+                        List<HoaDonThuoc>hoaDonThuocList=hoaDonThuocRepository.findByHoSoBenhAnId(data.getId());
+                        for(HoaDonThuoc hoaDonThuoc:hoaDonThuocList)
+                        {
+                            tthuoc+=hoaDonThuoc.getQuantity()*hoaDonThuoc.getPrice_per_quantity();
+                        }
+                        tienthuoc+=tthuoc;
+
+                        tienkhambenh+=data.getPrice_kham_benh();
+                    }
+                }
+                if(tienthuoc>0)
+                {
+                    doanhThuDTO.setTenbacsi(dataDoctor.getFullName());
+                    doanhThuDTO.setTienkhambenh(tienkhambenh);
+                    doanhThuDTO.setTienthuoc(tienthuoc);
+                    doanhThuDTO.setBacsiid(dataDoctor.getId());
+                    doanhThuDTOS.add(doanhThuDTO);
+                }
+            }
+        }
+        return doanhThuDTOS;
+    }
+
+    @Override
+    public List<HoSoBenhAnChuaTraTienDTO> GetChuaTraTienHoSoBenhAnBaseOnId(Long id) {
+        List<HoSoBenhAnChuaTraTienDTO>hoSoBenhAnChuaTraTienDTOList=new ArrayList<>();
+        List<HoSoBenhAn>hoSoBenhAnList=hoSoBenhAnRepository.findHoSoBenhAnChuaTraTienBaseOnId(id);
+        for(HoSoBenhAn data:hoSoBenhAnList)
+        {
+            HoSoBenhAnChuaTraTienDTO hoSoBenhAnChuaTraTienDTO=new HoSoBenhAnChuaTraTienDTO();
+            List<HoaDonThuoc>hoaDonThuocList=hoaDonThuocRepository.findByHoSoBenhAnId(data.getId());
+            float total=0;
+            for(HoaDonThuoc hoaDonThuoc:hoaDonThuocList)
+            {
+                total+=hoaDonThuoc.getQuantity()*hoaDonThuoc.getPrice_per_quantity();
+            }
+            hoSoBenhAnChuaTraTienDTO.setId(data.getId());
+            hoSoBenhAnChuaTraTienDTO.setTenbacsi(data.getDoctor().getFullName());
+            hoSoBenhAnChuaTraTienDTO.setTenbenhnhan(data.getPatient().getFullName());
+            hoSoBenhAnChuaTraTienDTO.setTienthuoc(String.valueOf(total));
+            hoSoBenhAnChuaTraTienDTO.setTienkhambenh(String.valueOf(data.getPrice_kham_benh()));
+            hoSoBenhAnChuaTraTienDTO.setNgay(dateFormat.ConverDateToStringToFE(data.getDate_created()));
+            hoSoBenhAnChuaTraTienDTO.setTongbienlai(String.valueOf(total+data.getPrice_kham_benh()));
+            hoSoBenhAnChuaTraTienDTOList.add(hoSoBenhAnChuaTraTienDTO);
+        }
+        return hoSoBenhAnChuaTraTienDTOList;
+    }
+
+    @Override
+    public DashboardDTO GetTopDashboard() {
+        DashboardDTO dashboardDTO=new DashboardDTO();
+        Date today=new Date();
+        int month=today.getMonth();
+        int year=today.getYear();
+        List<LichHenKham>lichHenKhamList=lichKhamRepository.GetAllLichHenKham();
+        int lichhenkham=0;
+        for(LichHenKham data:lichHenKhamList)
+        {
+            if(data.getDate_created().getMonth()==month && data.getDate_created().getYear()==year)
+            {
+                lichhenkham+=1;
+            }
+        }
+        dashboardDTO.setAppointments(lichhenkham);
+        List<HoSoBenhAn>hoSoBenhAnList=hoSoBenhAnRepository.findAllHoSoBenhAn();
+        int hosobenhan=0;
+        int earning=0;
+        for(HoSoBenhAn data:hoSoBenhAnList)
+        {
+            if(data.getDate_created().getMonth()==month && data.getDate_created().getYear()==year)
+            {
+                hosobenhan+=1;
+                List<HoaDonThuoc>hoaDonThuocList=hoaDonThuocRepository.findByHoSoBenhAnId(data.getId());
+                for(HoaDonThuoc dataHoaDonThuoc:hoaDonThuocList)
+                {
+                    earning+=dataHoaDonThuoc.getQuantity()* dataHoaDonThuoc.getPrice_per_quantity();
+                }
+            }
+        }
+        dashboardDTO.setEarning(earning);
+        dashboardDTO.setHosokhambenh(hosobenhan);
+
+        List<Patient>patientList=patientRepository.GetDanhSachBenhNhan();
+        int slpatient=0;
+        for(Patient dataPatient:patientList)
+        {
+            List<LichHenKham>lichHenKhamList1=lichKhamRepository.GetAllLichHenKham(dataPatient.getId());
+            if(lichHenKhamList1.size()>0)
+                slpatient+=1;
+        }
+        dashboardDTO.setNewpatient(slpatient);
+        dashboardDTO.setEarning(earning);
+        return dashboardDTO;
+    }
+
+    @Override
+    public List<BacSiDoanhThuTrongThangDTO> GetTopDoanhThuTrongThang() {
+        List<BacSiDoanhThuTrongThangDTO>bacSiDoanhThuTrongThangDTOS=new ArrayList<>();
+        List<Doctor>doctorList=doctorRepository.findAllDoctor();
+        Date today=new Date();
+        int month=today.getMonth();
+        int year=today.getYear();
+        for(Doctor dataDoctor:doctorList)
+        {
+            List<HoaDonThuoc>hoaDonThuocList=hoaDonThuocRepository.findByDoctorId(dataDoctor.getId());
+            if(hoaDonThuocList.size()>0)
+            {
+                BacSiDoanhThuTrongThangDTO bacSiDoanhThuTrongThangDTO=new BacSiDoanhThuTrongThangDTO();
+                float doanhthu=0;
+                for(HoaDonThuoc data:hoaDonThuocList)
+                {
+                    if(data.getHosobenhan().getDate_created().getMonth()==month && data.getHosobenhan().getDate_created().getYear()==year)
+                    {
+                        doanhthu+=data.getQuantity()*data.getPrice_per_quantity();
+                    }
+                }
+                if(doanhthu!=0)
+                {
+                    bacSiDoanhThuTrongThangDTO.setDoanhthu(doanhthu);
+                    bacSiDoanhThuTrongThangDTO.setId(dataDoctor.getId());
+                    bacSiDoanhThuTrongThangDTO.setName(dataDoctor.getFullName());
+                    bacSiDoanhThuTrongThangDTO.setTenkhoa(dataDoctor.getKhoa().getTenkhoa());
+                    bacSiDoanhThuTrongThangDTOS.add(bacSiDoanhThuTrongThangDTO);
+                }
+            }
+        }
+        return bacSiDoanhThuTrongThangDTOS.stream().sorted(Comparator.comparingDouble(BacSiDoanhThuTrongThangDTO::getDoanhthu)).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ThuocTrongThangDTO> GetThuocDungTrongThang() {
+        List<ThuocTrongThangDTO>thuocTrongThangDTOS=new ArrayList<>();
+        List<Thuoc>thuocList=thuocRepository.GetAllMedicine();
+        Date today=new Date();
+        int month=today.getMonth();
+        int year=today.getYear();
+        for(Thuoc dataThuoc:thuocList)
+        {
+            List<HoaDonThuoc>hoaDonThuocList=hoaDonThuocRepository.findByThuocId(dataThuoc.getId());
+            int quantity=0;
+            float total=0;
+            for(HoaDonThuoc data:hoaDonThuocList)
+            {
+                if(data.getHosobenhan().getDate_created().getMonth()==month && data.getHosobenhan().getDate_created().getYear()==year)
+                {
+                    quantity+=data.getQuantity();
+                    total+=data.getQuantity()*data.getPrice_per_quantity();
+                }
+            }
+            if(quantity!=0)
+            {
+                ThuocTrongThangDTO thuocTrongThangDTO=new ThuocTrongThangDTO();
+                thuocTrongThangDTO.setId(dataThuoc.getId());
+                thuocTrongThangDTO.setTenthuoc(dataThuoc.getName());
+                thuocTrongThangDTO.setPrice(total);
+                thuocTrongThangDTO.setQuantity(Long.valueOf(quantity));
+                thuocTrongThangDTOS.add(thuocTrongThangDTO);
+            }
+        }
+        return thuocTrongThangDTOS;
+    }
+
+    @Override
+    public List<CaBenhTrongNgayDTO> GetCaBenhTrongNgay() {
+        List<CaBenhTrongNgayDTO>caBenhTrongNgayDTOS=new ArrayList<>();
+        List<HoSoBenhAn>hoSoBenhAnList=hoSoBenhAnRepository.findAllHoSoBenhAn();
+        Date date=new Date();
+        int month=date.getMonth();
+        int year=date.getYear();
+        int day=date.getDate();
+        for(HoSoBenhAn hoSoBenhAn:hoSoBenhAnList)
+        {
+            if(hoSoBenhAn.getDate_created().getYear()==year && hoSoBenhAn.getDate_created().getMonth()==month && hoSoBenhAn.getDate_created().getDate()==day)
+            {
+                CaBenhTrongNgayDTO caBenhTrongNgayDTO=new CaBenhTrongNgayDTO();
+                caBenhTrongNgayDTO.setNgaytaikham(dateFormat.ConverDateToStringToFE(hoSoBenhAn.getNgay_tai_kham()));
+                caBenhTrongNgayDTO.setChuandoan(hoSoBenhAn.getChuan_doan());
+                caBenhTrongNgayDTO.setId(hoSoBenhAn.getId());
+                caBenhTrongNgayDTO.setTenbacsi(hoSoBenhAn.getDoctor().getFullName());
+                caBenhTrongNgayDTO.setTenbenhnhan(hoSoBenhAn.getPatient().getFullName());
+                caBenhTrongNgayDTOS.add(caBenhTrongNgayDTO);
+            }
+        }
+        return caBenhTrongNgayDTOS;
     }
 
 }

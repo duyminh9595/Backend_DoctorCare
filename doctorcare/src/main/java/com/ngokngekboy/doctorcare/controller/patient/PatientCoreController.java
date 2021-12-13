@@ -5,6 +5,7 @@ import com.ngokngekboy.doctorcare.common.DateFormat;
 import com.ngokngekboy.doctorcare.dto.DoctorBaseOnKhoaIdDTO;
 import com.ngokngekboy.doctorcare.dto.LichLamViecPatientAddApointmentDTO;
 import com.ngokngekboy.doctorcare.dto.ListDanhSachBacSiFree3DayDTO;
+import com.ngokngekboy.doctorcare.dto.UpdatePasswordDTO;
 import com.ngokngekboy.doctorcare.dto.patient.*;
 import com.ngokngekboy.doctorcare.entity.HoSoBenhAn;
 import com.ngokngekboy.doctorcare.entity.LichHenKham;
@@ -25,6 +26,7 @@ public class PatientCoreController {
 
     private IPatientSer iPatientSer;
     private DateFormat dateFormat;
+
 
     @GetMapping("/checktoken")
     public ResponseEntity CheckTokenLogin()
@@ -51,9 +53,9 @@ public class PatientCoreController {
 
             hoSoBenhAnDTO.setChuan_doan(hoSoBenhAn.getChuan_doan());
             hoSoBenhAnDTO.setDoctorname(hoSoBenhAn.getDoctor().getFullName());
-            hoSoBenhAnDTO.setDate_created(hoSoBenhAn.getDate_created());
+            hoSoBenhAnDTO.setDate_created(dateFormat.ConverDateToString(hoSoBenhAn.getDate_created()));
             hoSoBenhAnDTO.setId(hoSoBenhAn.getId());
-            hoSoBenhAnDTO.setNgay_tai_kham(hoSoBenhAn.getNgay_tai_kham());
+            hoSoBenhAnDTO.setNgay_tai_kham(dateFormat.ConverDateToString(hoSoBenhAn.getNgay_tai_kham()));
 
             hoSoBenhAnDTOS.add(hoSoBenhAnDTO);
         }
@@ -109,6 +111,14 @@ public class PatientCoreController {
             return ResponseEntity.ok().build();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
+    @PostMapping("/datlaiappointment")
+    public ResponseEntity DatLaiApointment(@RequestParam Long id)
+    {
+        boolean check=iPatientSer.DatLaiApointmentDaHuy(id);
+        if(check)
+            return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
     @GetMapping("/danhsachbacsifree3day")
     public ResponseEntity DanhSachBacSiFree3Day()
     {
@@ -121,4 +131,37 @@ public class PatientCoreController {
         List<LichSuApointmentDTO>lichSuApointmentDTOList=iPatientSer.GetLichSuApointment();
         return ResponseEntity.ok(lichSuApointmentDTOList);
     }
+    @GetMapping("/detailapointment")
+    public ResponseEntity GetDetailApointment(@RequestParam Long id)
+    {
+        DetailApointmentDTO detailApointmentDTO=iPatientSer.GetDetailApointment(id);
+        return ResponseEntity.ok(detailApointmentDTO);
+    }
+    @GetMapping("/getnamepatient")
+    public ResponseEntity GetDetailPatient()
+    {
+        DetailPatientDTO detailPatientDTO=iPatientSer.GetDetailPatient();
+        return ResponseEntity.ok(detailPatientDTO);
+    }
+    @GetMapping("/appointmentfromtoday")
+    public ResponseEntity GetAppointmentFromToday()
+    {
+        List<TodayAppointment>todayAppointments=iPatientSer.GetApointmentFromToday();
+        return ResponseEntity.ok(todayAppointments);
+    }
+    @GetMapping("/appointmentbeforetoday")
+    public ResponseEntity GetAppointmentBeforeToday()
+    {
+        List<TodayAppointment>todayAppointments=iPatientSer.GetApointmentBeforeToday();
+        return ResponseEntity.ok(todayAppointments);
+    }
+    @PostMapping("/changepassword")
+    public ResponseEntity UpdatePassword(@RequestBody UpdatePasswordDTO updatePasswordDTO)
+    {
+        boolean check =iPatientSer.UpdatePassword(updatePasswordDTO);
+        if(check)
+            return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
+
 }

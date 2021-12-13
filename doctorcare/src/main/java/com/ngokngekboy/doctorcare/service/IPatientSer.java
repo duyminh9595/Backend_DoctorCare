@@ -32,4 +32,16 @@ public interface IPatientSer {
     List<ListDanhSachBacSiFree3DayDTO> GetDanhSachBacSiFree3Day();
 
     List<LichSuApointmentDTO> GetLichSuApointment();
+
+    DetailApointmentDTO GetDetailApointment(Long id);
+
+    DetailPatientDTO GetDetailPatient();
+
+    boolean DatLaiApointmentDaHuy(Long id);
+
+    List<TodayAppointment> GetApointmentFromToday();
+
+    List<TodayAppointment> GetApointmentBeforeToday();
+
+    boolean UpdatePassword(UpdatePasswordDTO updatePasswordDTO);
 }
