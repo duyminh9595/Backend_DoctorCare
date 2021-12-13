@@ -3,6 +3,7 @@ package com.ngokngekboy.doctorcare.controller.khoa;
 
 import com.ngokngekboy.doctorcare.dao.KhoaRepository;
 import com.ngokngekboy.doctorcare.dto.KhoaDTO;
+import com.ngokngekboy.doctorcare.dto.TenKhoaDTO;
 import com.ngokngekboy.doctorcare.dto.admin.ThemKhoaDTO;
 import com.ngokngekboy.doctorcare.dto.patient.PatientRegisterDTO;
 import com.ngokngekboy.doctorcare.entity.Khoa;
@@ -52,4 +53,19 @@ public class KhoaController {
         }
         return ResponseEntity.ok(khoaDTOList);
     }
+    @PostMapping("/timtenkhoa")
+    public ResponseEntity DanhSachTenKhoa(@RequestBody TenKhoaDTO tenKhoaDTO)
+    {
+        List<Khoa> khoaList=khoaRepository.findKhoaByTen(tenKhoaDTO.getName());
+        List<KhoaDTO>khoaDTOList=new ArrayList<>();
+        for(Khoa data:khoaList)
+        {
+            KhoaDTO khoaDTO=new KhoaDTO();
+            khoaDTO.setId(data.getId());
+            khoaDTO.setTenkhoa(data.getTenkhoa());
+            khoaDTOList.add(khoaDTO);
+        }
+        return ResponseEntity.ok(khoaDTOList);
+    }
+
 }

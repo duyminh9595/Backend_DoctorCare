@@ -5,6 +5,7 @@ import com.ngokngekboy.doctorcare.dto.LoginDTO;
 import com.ngokngekboy.doctorcare.dto.NameMedicineDTOO;
 import com.ngokngekboy.doctorcare.dto.SuccessDTO;
 import com.ngokngekboy.doctorcare.dto.admin.*;
+import com.ngokngekboy.doctorcare.dto.doctor.InfoDoctor;
 import com.ngokngekboy.doctorcare.dto.patient.PatientInforDTO;
 import com.ngokngekboy.doctorcare.dto.patient.TodayAppointment;
 
@@ -81,4 +82,8 @@ public interface IAdminSer {
     List<ThuocTrongThangDTO> GetThuocDungTrongThang();
 
     List<CaBenhTrongNgayDTO> GetCaBenhTrongNgay();
+
+    List<InfoDoctor> GetDanhSachDocTorBaseKhoa(Long id);
+
+    List<InfoDoctor> GetDanhSachDocTorByName(String name,Long id);
 }

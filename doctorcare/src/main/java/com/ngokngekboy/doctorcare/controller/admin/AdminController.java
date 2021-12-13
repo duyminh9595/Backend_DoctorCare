@@ -2,6 +2,7 @@ package com.ngokngekboy.doctorcare.controller.admin;
 
 import com.ngokngekboy.doctorcare.dto.*;
 import com.ngokngekboy.doctorcare.dto.admin.*;
+import com.ngokngekboy.doctorcare.dto.doctor.InfoDoctor;
 import com.ngokngekboy.doctorcare.dto.patient.PatientInforDTO;
 import com.ngokngekboy.doctorcare.dto.patient.TodayAppointment;
 import com.ngokngekboy.doctorcare.jwt.JwtGenerationAdmin;
@@ -312,5 +313,17 @@ public class AdminController {
     {
         List<CaBenhTrongNgayDTO>caBenhTrongNgayDTOS=iAdminSer.GetCaBenhTrongNgay();
         return ResponseEntity.ok(caBenhTrongNgayDTOS);
+    }
+    @GetMapping("/core/getdanhsachbacsitrongkhoa")
+    public ResponseEntity GetBacSiTrongKhoa(@RequestParam Long id)
+    {
+        List<InfoDoctor>infoDoctorList=iAdminSer.GetDanhSachDocTorBaseKhoa(id);
+        return ResponseEntity.ok(infoDoctorList);
+    }
+    @PostMapping("/core/getbacsibyname")
+    public ResponseEntity GetBacSiByName(@RequestBody FindDoctorNameDTO findDoctorNameDTO,@RequestParam Long id)
+    {
+        List<InfoDoctor>infoDoctorList=iAdminSer.GetDanhSachDocTorByName(findDoctorNameDTO.getName(),id);
+        return ResponseEntity.ok(infoDoctorList);
     }
 }

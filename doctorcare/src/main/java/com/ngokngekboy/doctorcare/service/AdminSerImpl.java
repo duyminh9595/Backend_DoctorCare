@@ -8,6 +8,7 @@ import com.ngokngekboy.doctorcare.dto.LoginDTO;
 import com.ngokngekboy.doctorcare.dto.NameMedicineDTOO;
 import com.ngokngekboy.doctorcare.dto.SuccessDTO;
 import com.ngokngekboy.doctorcare.dto.admin.*;
+import com.ngokngekboy.doctorcare.dto.doctor.InfoDoctor;
 import com.ngokngekboy.doctorcare.dto.patient.PatientInforDTO;
 import com.ngokngekboy.doctorcare.dto.patient.TodayAppointment;
 import com.ngokngekboy.doctorcare.entity.*;
@@ -1213,6 +1214,90 @@ public class AdminSerImpl implements IAdminSer{
             }
         }
         return caBenhTrongNgayDTOS;
+    }
+
+    @Override
+    public List<InfoDoctor> GetDanhSachDocTorBaseKhoa(Long id) {
+        List<Doctor>doctorList= doctorRepository.findDanhSachDoctor();
+        List<InfoDoctor>infoDoctorList=new ArrayList<>();
+        for(Doctor data:doctorList)
+        {
+            if(data.getKhoa().getId()==id)
+            {
+                InfoDoctor infoDoctor=new InfoDoctor();
+                infoDoctor.setEmail(data.getEmail());
+                infoDoctor.setFullname(data.getFullName());
+                infoDoctor.setImage_url(data.getImage_url());
+                infoDoctor.setId(data.getId());
+                infoDoctor.setMakhoa(data.getKhoa().getId());
+                infoDoctor.setTenkhoa(data.getKhoa().getTenkhoa());
+                infoDoctor.setGender(data.isGender());
+                infoDoctor.setSdt(data.getSdt());
+                if(data.getDate_of_birth()!=null)
+                    infoDoctor.setDateofbirth(data.getDate_of_birth().toString());
+                else
+                    infoDoctor.setDateofbirth("");
+                infoDoctorList.add(infoDoctor);
+            }
+
+        }
+        return infoDoctorList;
+    }
+
+    @Override
+    public List<InfoDoctor> GetDanhSachDocTorByName(String name,Long id) {
+        String name_or_email=name.replace(" ","");
+        if(name_or_email.length()==0)
+        {
+            List<Doctor>doctorList= doctorRepository.findDanhSachDoctor();
+            List<InfoDoctor>infoDoctorList=new ArrayList<>();
+            for(Doctor data:doctorList)
+            {
+                if(data.getKhoa().getId()==id)
+                {
+                    InfoDoctor infoDoctor=new InfoDoctor();
+                    infoDoctor.setEmail(data.getEmail());
+                    infoDoctor.setFullname(data.getFullName());
+                    infoDoctor.setImage_url(data.getImage_url());
+                    infoDoctor.setId(data.getId());
+                    infoDoctor.setMakhoa(data.getKhoa().getId());
+                    infoDoctor.setTenkhoa(data.getKhoa().getTenkhoa());
+                    infoDoctor.setGender(data.isGender());
+                    infoDoctor.setSdt(data.getSdt());
+                    if(data.getDate_of_birth()!=null)
+                        infoDoctor.setDateofbirth(data.getDate_of_birth().toString());
+                    else
+                        infoDoctor.setDateofbirth("");
+                    infoDoctorList.add(infoDoctor);
+                }
+            }
+            return infoDoctorList;
+        }
+        else
+        {
+            List<Doctor>doctorList= doctorRepository.findDanhSachDoctorByName(name_or_email);
+            List<InfoDoctor>infoDoctorList=new ArrayList<>();
+            for(Doctor data:doctorList)
+            {
+                if(data.getKhoa().getId()==id)
+                {
+                InfoDoctor infoDoctor=new InfoDoctor();
+                infoDoctor.setEmail(data.getEmail());
+                infoDoctor.setFullname(data.getFullName());
+                infoDoctor.setImage_url(data.getImage_url());
+                infoDoctor.setId(data.getId());
+                infoDoctor.setMakhoa(data.getKhoa().getId());
+                infoDoctor.setTenkhoa(data.getKhoa().getTenkhoa());
+                infoDoctor.setGender(data.isGender());
+                infoDoctor.setSdt(data.getSdt());
+                if(data.getDate_of_birth()!=null)
+                    infoDoctor.setDateofbirth(data.getDate_of_birth().toString());
+                else
+                    infoDoctor.setDateofbirth("");
+                infoDoctorList.add(infoDoctor);}
+            }
+            return infoDoctorList;
+        }
     }
 
 }
