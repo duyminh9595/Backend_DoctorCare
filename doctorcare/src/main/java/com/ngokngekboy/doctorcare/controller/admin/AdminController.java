@@ -326,4 +326,14 @@ public class AdminController {
         List<InfoDoctor>infoDoctorList=iAdminSer.GetDanhSachDocTorByName(findDoctorNameDTO.getName(),id);
         return ResponseEntity.ok(infoDoctorList);
     }
+    @PostMapping("/core/deletedoctor")
+    public ResponseEntity DeleteDoctor(@RequestParam Long id)
+    {
+        boolean check=iAdminSer.DeleteDoctor(id);
+        if(check)
+        {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
 }

@@ -110,6 +110,7 @@ public class DoctorSerImpl implements IDoctorSer{
             infoDoctor.setTenkhoa(data.getKhoa().getTenkhoa());
             infoDoctor.setGender(data.isGender());
             infoDoctor.setSdt(data.getSdt());
+            infoDoctor.setStatus(data.isEnable_status());
             if(data.getDate_of_birth()!=null)
                 infoDoctor.setDateofbirth(data.getDate_of_birth().toString());
             else

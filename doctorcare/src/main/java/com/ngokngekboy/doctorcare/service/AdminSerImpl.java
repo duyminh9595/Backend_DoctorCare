@@ -1300,4 +1300,18 @@ public class AdminSerImpl implements IAdminSer{
         }
     }
 
+    @Override
+    public boolean DeleteDoctor(Long id) {
+        Doctor doctor=doctorRepository.findDoctorById(id);
+        if(doctor!=null)
+        {
+            doctor.setEnable_status(!doctor.isEnable_status());
+            System.out.printf(doctor.toString());
+            doctorRepository.save(doctor);
+            return true;
+        }
+        return false;
+    }
+
+
 }

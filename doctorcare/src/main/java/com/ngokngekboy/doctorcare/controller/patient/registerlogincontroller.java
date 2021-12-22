@@ -6,6 +6,7 @@ import com.ngokngekboy.doctorcare.dto.SuccessDTO;
 import com.ngokngekboy.doctorcare.dto.UpdatePasswordDTO;
 import com.ngokngekboy.doctorcare.dto.doctor.ForgotPasswordDTO;
 import com.ngokngekboy.doctorcare.dto.patient.PatientRegisterDTO;
+import com.ngokngekboy.doctorcare.dto.patient.SelfRegisterDTO;
 import com.ngokngekboy.doctorcare.service.IPatientSer;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -28,6 +29,21 @@ public class registerlogincontroller {
         if(checkRegister)
         {
             boolean checkSendEmail=iPatientSer.SendEmailConfirm(patientRegisterDTO);
+            if(checkSendEmail)
+            {
+                return ResponseEntity.status(HttpStatus.OK).build();
+            }
+            return ResponseEntity.ok("Gui email that bai");
+        }
+        return ResponseEntity.ok("Dang Ky That Bai");
+    }
+    @PostMapping("/selfregister")
+    public ResponseEntity SelfRegister(@RequestBody SelfRegisterDTO patientRegisterDTO)
+    {
+        boolean checkRegister=iPatientSer.PatientSelfRegister(patientRegisterDTO);
+        if(checkRegister)
+        {
+            boolean checkSendEmail=iPatientSer.SendEmailConfirmRegister(patientRegisterDTO);
             if(checkSendEmail)
             {
                 return ResponseEntity.status(HttpStatus.OK).build();

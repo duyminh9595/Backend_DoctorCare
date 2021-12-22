@@ -25,4 +25,6 @@ public class InfoDoctor {
     private String bangcap;
     @NotNull
     private String cmnd;
+    @NotNull
+    private boolean status;
 }

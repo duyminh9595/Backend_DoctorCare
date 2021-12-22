@@ -26,7 +26,7 @@ public interface DoctorRepository extends JpaRepository<Doctor,Long> {
     @Query("select p from Doctor p  where p.token_confirm_email=?1")
     Doctor findByToken_confirm_email(String token_confirm_email);
 
-    @Query("select p from Doctor p where p.enable_status=true ")
+    @Query("select p from Doctor p  ")
     List<Doctor>findDanhSachDoctor();
 
     @Query("select p from Doctor p where p.fullName like CONCAT('%',:name_or_emaIl,'%')  or p.email like CONCAT('%',:name_or_emaIl,'%') ")

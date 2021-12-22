@@ -86,4 +86,6 @@ public interface IAdminSer {
     List<InfoDoctor> GetDanhSachDocTorBaseKhoa(Long id);
 
     List<InfoDoctor> GetDanhSachDocTorByName(String name,Long id);
+
+    boolean DeleteDoctor(Long id);
 }

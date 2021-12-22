@@ -44,4 +44,8 @@ public interface IPatientSer {
     List<TodayAppointment> GetApointmentBeforeToday();
 
     boolean UpdatePassword(UpdatePasswordDTO updatePasswordDTO);
+
+    boolean SendEmailConfirmRegister(SelfRegisterDTO patientRegisterDTO);
+
+    boolean PatientSelfRegister(SelfRegisterDTO patientRegisterDTO);
 }

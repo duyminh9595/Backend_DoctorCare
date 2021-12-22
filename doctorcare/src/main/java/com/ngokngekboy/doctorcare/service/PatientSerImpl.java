@@ -648,6 +648,40 @@ public class PatientSerImpl implements IPatientSer{
         return false;
     }
 
+    @Override
+    public boolean SendEmailConfirmRegister(SelfRegisterDTO patientRegisterDTO) {
+        Patient patient=patientRepository.findByEmail(patientRegisterDTO.getEmail());
+        if(patient!=null)
+        {
+            String uuid = UUID.randomUUID().toString().replace("-", "");
+            patient.setToken_confirm_email(uuid);
+            patientRepository.save(patient);
+            String link="http://localhost:4200/api/register/confirm/token/"+uuid;
+            emailSenderService.sendSimpleMessage(patient.getEmail(),"xac nhan dang ky tai ngok ngek boy",link);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean PatientSelfRegister(SelfRegisterDTO patientRegisterDTO) {
+        Patient patient=patientRepository.findByEmail(patientRegisterDTO.getEmail());
+        if(patient==null)
+        {
+            patient=objectMapper.convertValue(patientRegisterDTO,Patient.class);
+            patient.setDate_of_birth(dateFormat.ConvertStringToDate("1900-01-01"));
+            patient.setAddress("0");
+            patient.setCmnd("0");
+            patient.setGender(false);
+            patient.setPassword(passwordEncoder.encode(patient.getPassword()));
+            patient.setEnable_status(true);
+            patient.setSdt(0);
+            patientRepository.save(patient);
+            return true;
+        }
+        return false;
+    }
+
 
     private List<LichLamViecPatientAddApointmentDTO> DoGetLichLamViec(List<Date> dateList,Doctor doctor)
     {
